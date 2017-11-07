@@ -1,99 +1,45 @@
+/**
+ * @author Mykhailo Strilets
+ * @version 1.2
+ */
+
 package strilets;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Scanner;
 
 public class Book {
 
-	public static void main(String[] args) throws SQLException, ClassNotFoundException {
+	/**
+	 * Author of the book
+	 */
+	private String author;
 
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			System.out.println("There are not MySQL JDBC Driver!");
-			e.printStackTrace();
-			return;
-		}
+	/**
+	 * Name of the book
+	 */
+	private String name;
 
-		Connection connection = null;
+	/**
+	 * Function adding book to library
+	 * 
+	 * @param statement
+	 * @param data
+	 * @throws SQLException
+	 */
+	public void addBook(Statement statement, String data) throws SQLException {
 
-		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/library", "root", "08642");
-		} catch (SQLException e) {
-			System.out.println("Connection failed!");
-			e.printStackTrace();
-			return;
-		}
-
-		if (connection != null) {
-			System.out.println("Connection successful!");
-		} else {
-			System.out.println("Connection failed!");
-		}
-
-		System.out.println("Welcome to library!");
-
-		Statement statement = null;
-		statement = connection.createStatement();
-
-		Scanner sc = new Scanner(System.in);
-		boolean exit = false;
-
-		while (!exit) {
-			String command;
-			System.out.print("U: ");
-			command = sc.nextLine();
-
-			String operation;
-
-			int i = command.indexOf(32);
-			if (i == -1)
-				operation = command;
-			else
-				operation = command.substring(0, i);
-
-			if ("add".equals(operation))
-				addBook(statement, command);
-
-			else if ("all".equals(operation))
-				allBooks(statement);
-
-			else if ("edit".equals(operation))
-				editBook(statement, command);
-
-			else if ("remove".equals(operation))
-				removeBook(statement, command);
-
-			else if ("exit".equals(operation))
-				exit = true;
-
-			else
-				System.out.println("P: wrong command");
-
-		}
-
-		if (statement != null) {
-			statement.close();
-		}
-
-		if (connection != null) {
-			connection.close();
-		}
-
-		System.out.println("Bye!");
-	}
-
-	public static void addBook(Statement statement, String command) throws SQLException {
-
-		int index = command.indexOf("\"");
+		int index = data.indexOf("\"");
 
 		if (index == -1) {
 			System.out.println("P: wrong command");
 			return;
 		}
 
-		String author = command.substring(4, index - 1);
-		String name = command.substring(index + 1, command.length() - 1);
+		author = data.substring(0, index - 1);
+		name = data.substring(index + 1, data.length() - 1);
 
 		String sql = "INSERT INTO book (name, author)" + " VALUES " + "('" + name + "','" + author + "')";
 
@@ -101,7 +47,13 @@ public class Book {
 		System.out.println("P: book " + author + " \"" + name + "\" was added ");
 	}
 
-	public static void allBooks(Statement statement) throws SQLException {
+	/**
+	 * Function viewing all books in library
+	 * 
+	 * @param statement
+	 * @throws SQLException
+	 */
+	public void allBooks(Statement statement) throws SQLException {
 
 		String sql = "SELECT * FROM BOOK ORDER BY name;";
 		ResultSet resultSet = statement.executeQuery(sql);
@@ -119,20 +71,26 @@ public class Book {
 		}
 	}
 
-	public static void editBook(Statement statement, String command) throws SQLException {
+	/**
+	 * Function editing name of the book
+	 * 
+	 * @param statement
+	 * @param data
+	 * @throws SQLException
+	 */
+	public void editBook(Statement statement, String data) throws SQLException {
 
-		int index = command.indexOf(32);
-
-		if (index == -1) {
-			System.out.println("P: wrong command");
+		if ("".equals(data)) {
+			System.out.println("P: name not specified");
 			return;
 		}
 
-		String oldName = command.substring(index + 1, command.length());
+		String oldName = data.substring(0, data.length());
 
 		String sql = "SELECT * FROM BOOK WHERE name = '" + oldName + "' ORDER BY name;";
 		ResultSet resultSet = statement.executeQuery(sql);
 
+		@SuppressWarnings("resource")
 		Scanner sc = new Scanner(System.in);
 
 		int rowCount = 0;
@@ -196,20 +154,26 @@ public class Book {
 		}
 	}
 
-	public static void removeBook(Statement statement, String command) throws SQLException {
+	/**
+	 * Function deleting book from the library
+	 * 
+	 * @param statement
+	 * @param data
+	 * @throws SQLException
+	 */
+	public void removeBook(Statement statement, String data) throws SQLException {
 
-		int index = command.indexOf(32);
-
-		if (index == -1) {
-			System.out.println("P: wrong command");
+		if ("".equals(data)) {
+			System.out.println("P: name not specified");
 			return;
 		}
 
-		String name = command.substring(index + 1, command.length());
+		String name = data.substring(0, data.length());
 
 		String sql = "SELECT * FROM BOOK WHERE name = '" + name + "' ORDER BY name;";
 		ResultSet resultSet = statement.executeQuery(sql);
 
+		@SuppressWarnings("resource")
 		Scanner sc = new Scanner(System.in);
 
 		int rowCount = 0;
